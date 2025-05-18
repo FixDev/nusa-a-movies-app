@@ -1,7 +1,8 @@
 import "@testing-library/jest-dom";
 
 class IntersectionObserverMock {
-  constructor(callback: IntersectionObserverCallback) {}
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  constructor() {}
   disconnect() {}
   observe() {}
   unobserve() {}
