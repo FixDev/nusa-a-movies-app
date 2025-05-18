@@ -39,6 +39,12 @@ describe("Button", () => {
     const btn = screen.getByText("Submit");
     expect(btn).toHaveAttribute("type", "submit");
   });
+
+  it("merges custom className with default classes", () => {
+    render(<Button className="custom-class">Styled</Button>);
+    const btn = screen.getByText("Styled");
+    expect(btn).toHaveClass("custom-class");
+  });
 });
 
 vi.mock("../../utils", () => ({
@@ -91,6 +97,31 @@ describe("MovieCard", () => {
 
     expect(screen.getByRole("status")).toBeInTheDocument();
   });
+
+  it("navigates when pressing Enter key", () => {
+    render(
+      <MemoryRouter>
+        <MovieCard movie={mockMovie} />
+      </MemoryRouter>
+    );
+
+    const card = screen.getByRole("button");
+    fireEvent.keyUp(card, { key: "Enter" });
+    expect(mockNavigate).toHaveBeenCalledWith(`/movie/${mockMovie.id}`);
+  });
+
+  it("hides loading spinner after image loads", () => {
+    render(
+      <MemoryRouter>
+        <MovieCard movie={mockMovie} />
+      </MemoryRouter>
+    );
+
+    const img = screen.getByRole("img") as HTMLImageElement;
+    fireEvent.load(img);
+
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
 });
 
 describe("SearchInput", () => {
@@ -126,5 +157,21 @@ describe("SearchInput", () => {
 
     expect(handleChange).toHaveBeenCalledTimes(1);
     expect(handleChange).toHaveBeenCalledWith("batman");
+  });
+
+  it("shows clear button when there is a value and clears on click", () => {
+    const handleChange = vi.fn();
+    render(<SearchInput value="test" onChange={handleChange} />);
+
+    const clearButton = screen.getByLabelText("Clear search");
+    expect(clearButton).toBeInTheDocument();
+
+    fireEvent.click(clearButton);
+    expect(handleChange).toHaveBeenCalledWith("");
+  });
+
+  it("does not show clear button when input is empty", () => {
+    render(<SearchInput value="" onChange={() => {}} />);
+    expect(screen.queryByLabelText("Clear search")).not.toBeInTheDocument();
   });
 });

@@ -2,9 +2,11 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { fetchMovies } from "../services";
 import { MovieCategory, type Movie } from "../types";
-import { Button } from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import Input from "../components/ui/Input";
+import Carousel from "../components/Carousel";
+import { useDebounce } from "../hook";
+import CategorySelector from "../components/CategorySelector";
 
 const categories = [
   { key: MovieCategory.NowPlaying, label: "Now Playing" },
@@ -14,30 +16,34 @@ const categories = [
 ];
 
 export default function Home() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = searchParams.get("query") || "";
+
   const [movies, setMovies] = useState<Movie[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState<MovieCategory>("popular");
-
-  const [searchParams, setSearchParams] = useSearchParams();
-  const query = searchParams.get("query") || "";
+  const [inputValue, setInputValue] = useState(query);
 
   const loader = useRef<HTMLDivElement | null>(null);
 
-  const [inputValue, setInputValue] = useState(query);
+  const debouncedInput = useDebounce(inputValue, 800);
+
+  useEffect(() => {
+    const trimmed = debouncedInput.trim();
+
+    if (trimmed === "") {
+      if (query) setSearchParams({});
+    } else if (trimmed !== query) {
+      setSearchParams({ query: trimmed });
+    }
+  }, [debouncedInput]);
 
   useEffect(() => {
     setInputValue(query);
   }, [query]);
-
-  useEffect(() => {
-    if (inputValue.trim() === "" && query) {
-      setMovies([]);
-      setSearchParams({});
-    }
-  }, [inputValue, query]);
 
   const fetchData = useCallback(
     async (reset = false) => {
@@ -100,34 +106,28 @@ export default function Home() {
     e.preventDefault();
     setMovies([]);
     setError(null);
-    const val = inputValue.trim();
-    setSearchParams(val ? { query: val } : {});
   };
+
+  const carouselMovies = movies.slice(0, 10);
+  const listMovies = movies.slice(10);
+
+  // const carouselMovies = useMemo(() => movies.slice(0, 10), [movies]);
+  // const listMovies = useMemo(() => movies.slice(10), [movies]);
 
   return (
     <div className="max-w-6xl mx-auto p-4 text-gray-900 dark:text-gray-100 transition-colors duration-500">
       <form
         onSubmit={handleSearch}
         aria-label="search form"
-        className="mb-6 max-w-sm flex items-center space-x-2"
+        className="mb-6 max-w-2xl flex items-center space-x-2"
       >
-        <div className="flex-1">
+        <div className="flex-grow">
           <Input value={inputValue} onChange={setInputValue} />
         </div>
-        <Button type="submit">Find Movie</Button>
+        <div className="w-48">
+          <CategorySelector category={category} setCategory={setCategory} />
+        </div>
       </form>
-
-      <div className="mb-6 flex flex-wrap gap-3">
-        {categories.map((cat) => (
-          <Button
-            key={cat.key}
-            onClick={() => setCategory(cat.key)}
-            isSelected={category === cat.key}
-          >
-            {cat.label}
-          </Button>
-        ))}
-      </div>
 
       {error && (
         <div className="text-center text-red-600 dark:text-red-400 my-8 font-semibold">
@@ -141,11 +141,27 @@ export default function Home() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-        {movies.map((movie) => (
-          <Card key={movie.id} movie={movie} />
-        ))}
-      </div>
+      {movies.length > 0 && (
+        <>
+          <div className="mb-8">
+            {!query && (
+              <>
+                <h2 className="text-xl md:text-4xl font-semibold mb-4">
+                  {categories.find((c) => c.key === category)?.label}
+                </h2>
+
+                <Carousel movies={carouselMovies} />
+              </>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
+            {(!query ? listMovies : movies).map((movie) => (
+              <Card key={movie.id} movie={movie} />
+            ))}
+          </div>
+        </>
+      )}
 
       <div ref={loader} className="h-12 my-10 flex justify-center items-center">
         {loading && (

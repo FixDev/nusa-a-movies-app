@@ -14,7 +14,7 @@ describe("Home page", () => {
     vi.clearAllMocks();
   });
 
-  test("renders categories buttons and search input", () => {
+  test("renders categories buttons and search input", async () => {
     (
       services.fetchMovies as unknown as ReturnType<typeof vi.fn>
     ).mockResolvedValue({
@@ -30,9 +30,10 @@ describe("Home page", () => {
 
     expect(screen.getByRole("textbox")).toBeInTheDocument();
 
-    ["Now Playing", "Popular", "Top Rated", "Upcoming"].forEach((label) => {
-      expect(screen.getByRole("button", { name: label })).toBeInTheDocument();
-    });
+    for (const label of ["Popular"]) {
+      const button = await screen.findByRole("button", { name: label });
+      expect(button).toBeInTheDocument();
+    }
   });
 
   test("loads and displays movies on initial render", async () => {

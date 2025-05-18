@@ -19,19 +19,21 @@ export default function Details() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading)
+  if (loading) {
     return (
       <p className="p-6 text-center text-gray-500 dark:text-gray-400 font-medium">
         Loading...
       </p>
     );
+  }
 
-  if (!movie)
+  if (!movie) {
     return (
       <p className="p-6 text-center text-red-500 font-semibold">
         Movie not found
       </p>
     );
+  }
 
   const director = movie.credits.crew.find(
     (member) => member.job === "Director"
