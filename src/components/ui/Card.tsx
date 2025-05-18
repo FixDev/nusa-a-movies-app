@@ -28,7 +28,10 @@ export default function MovieCard({ movie }: MovieCardProps) {
     >
       <div className="w-full aspect-[2/3] relative overflow-hidden bg-gray-200 dark:bg-gray-800 flex justify-center items-center">
         {!imgLoaded && (
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div
+            role="status"
+            className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"
+          />
         )}
         <img
           src={getFullImageUrl(movie.poster_path)}
