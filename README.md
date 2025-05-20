@@ -1,4 +1,4 @@
-# 🎬 Nusa A Movies App by Muhammad Fikr (FixDev)
+# 🎬 Nusa A Movies App by Muhammad Fikri (FixDev)
 
 A minimal and modern movie web application built with **React**, **TypeScript**, and **Vite**. This project serves as a learning playground, demonstrating best practices, clean architecture, and a testable frontend stack.
 
